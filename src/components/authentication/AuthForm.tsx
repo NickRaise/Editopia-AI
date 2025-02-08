@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import LoginForm from "./LoginForm";
 import { Button } from "../ui/button";
 import ResetPassword from "./ResetPassword";
+import SignupForm from "./SignupForm";
 
 const AuthForm = () => {
   const [mode, setMode] = useState("login");
@@ -48,7 +49,7 @@ const AuthForm = () => {
       )}
       {mode === "signup" && (
         <>
-          <LoginForm />
+          <SignupForm />
           <div className="text-center">
             <Button
               className="p-0"

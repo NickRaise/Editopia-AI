@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId, useState } from "react";
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,9 +16,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { signUpNewUser } from "@/app/actions/auth-actions";
+import { redirect } from "next/navigation";
 
 const passwordValidationRegex = new RegExp(
-  "^(?=.*[A-Za-z])(?=.*d)(?=.*[@$!%*#?&])[A-Za-zd@$!%*#?&]{8,}$"
+  "^(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
 );
 
 const formSchema = z
@@ -44,12 +48,17 @@ const formSchema = z
       required_error: "Password is required!",
     }),
   })
+  // This heps to perform calidation between two fields
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passowrd don't match",
     path: ["confirmPassowrd"],
   });
 
 const SignupForm = ({ className }: { className?: string }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const toastId = useId();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,9 +69,29 @@ const SignupForm = ({ className }: { className?: string }) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    toast.loading("Signing up...", { id: toastId });
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("full_name", values.full_name);
+    formData.append("email", values.email);
+    formData.append("password", values.password);
+
+    const { success, error } = await signUpNewUser(formData);
+
+    if (!success) {
+      toast.error(String(error), { id: toastId });
+      setLoading(false);
+    } else {
+      toast.success(
+        "Signed up successfully! Please confirm your email address.",
+        { id: toastId }
+      );
+      setLoading(false);
+      redirect("/login");
+    }
+
     console.log(values);
   }
 
@@ -130,7 +159,8 @@ const SignupForm = ({ className }: { className?: string }) => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>
         </form>
