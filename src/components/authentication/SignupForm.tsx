@@ -91,8 +91,6 @@ const SignupForm = ({ className }: { className?: string }) => {
       setLoading(false);
       redirect("/login");
     }
-
-    console.log(values);
   }
 
   return (

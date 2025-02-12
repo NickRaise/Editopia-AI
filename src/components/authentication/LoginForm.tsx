@@ -64,8 +64,6 @@ const LoginForm = ({ className }: { className?: string }) => {
       setLoading(false);
       redirect("/dashboard");
     }
-
-    console.log(values);
   }
 
   return (
